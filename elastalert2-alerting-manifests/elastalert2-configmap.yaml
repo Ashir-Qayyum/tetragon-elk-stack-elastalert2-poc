@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elastalert2-config
+  namespace: elastic
+data:
+  config.yaml: |
+    rules_folder: /opt/elastalert/rules
+
+    run_every:
+      seconds: 30
+
+    buffer_time:
+      minutes: 2
+
+    es_host: elasticsearch.elastic.svc.cluster.local
+    es_port: 9200
+    use_ssl: false
+
+    writeback_index: elastalert_status

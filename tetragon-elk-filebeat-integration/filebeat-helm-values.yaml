@@ -1,0 +1,34 @@
+dnsPolicy: ClusterFirstWithHostNet
+
+export:
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+
+  stdout:
+    enabledCommand: false
+    enabledArgs: false
+
+    image:
+      override: "docker.elastic.co/beats/filebeat:9.5.4"
+
+    extraVolumeMounts:
+      - name: filebeat-config
+        mountPath: /usr/share/filebeat/filebeat.yml
+        subPath: filebeat.yml
+
+      - name: filebeat-data
+        mountPath: /usr/share/filebeat/data
+
+extraVolumes:
+  - name: filebeat-data
+    hostPath:
+      path: /var/run/cilium/tetragon/filebeat
+      type: DirectoryOrCreate
+
+  - name: filebeat-config
+    configMap:
+      name: filebeat-configmap
+      items:
+        - key: filebeat.yml
+          path: filebeat.yml

@@ -1,0 +1,100 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: block-cryptominer-n-malicious-exec
+spec:
+  kprobes:
+
+
+  - call: "security_bprm_check"
+    syscall: false
+    message: "Malicious/miner execution detected - so process killed"
+    tags: ["cryptomining", "mitre_impact", "T1496", "mitre_execution", "T1059"]
+    args:
+    - index: 0
+      type: "linux_binprm"
+    selectors:
+    # 1) Program from Writable folders
+    - matchArgs:
+      - index: 0
+        operator: "Prefix"
+        values:
+        - "/tmp/"
+        - "/dev/shm/"
+        - "/var/tmp/"
+        - "/run/"
+        - "/var/run/"
+      matchActions:
+      - action: Sigkill
+    # 2) Miner Famous Names
+    - matchArgs:
+      - index: 0
+        operator: "Postfix"
+        values:
+        - "/xmrig"
+        - "/xmr-stak"
+        - "/xmrigDaemon"
+        - "/minerd"
+        - "/cpuminer"
+        - "/cpuminer-multi"
+        - "/ethminer"
+        - "/nbminer"
+        - "/t-rex"
+        - "/lolMiner"
+        - "/phoenixminer"
+        - "/kdevtmpfsi"
+        - "/kinsing"
+        - "/sysupdate"
+        - "/networkservice"
+      matchActions:
+      - action: Sigkill
+    # 3) Running shell or downloader using Python
+    - matchBinaries:
+      - operator: "In"
+        followChildren: true
+        values:
+        - "/usr/local/bin/python3"
+        - "/usr/local/bin/python3.12"
+        - "/usr/bin/python3"
+        - "/app/.venv/bin/python"
+      matchArgs:
+      - index: 0
+        operator: "Postfix"
+        values:
+        - "/sh"
+        - "/bash"
+        - "/dash"
+        - "/curl"
+        - "/wget"
+        - "/nc"
+        - "/ncat"
+        - "/socat"
+      matchActions:
+      - action: Sigkill
+
+  # ---------- Network check (layer 4) ----------
+  - call: "tcp_connect"
+    syscall: false
+    message: "Connection to crypto mining pool port - so process killed"
+    tags: ["cryptomining", "mitre_impact", "T1496"]
+    args:
+    - index: 0
+      type: "sock"
+    selectors:
+    - matchArgs:
+      - index: 0
+        operator: "DPort"
+        values:
+        - "3333"
+        - "4444"
+        - "5555"
+        - "6666"
+        - "7777"
+        - "8888"
+        - "9999"
+        - "14433"
+        - "14444"
+        - "45560"
+        - "45700"
+      matchActions:
+      - action: Sigkill

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elastalert2
+  namespace: elastic
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: elastalert2
+
+  template:
+    metadata:
+      labels:
+        app: elastalert2
+
+    spec:
+      containers:
+        - name: elastalert2
+          image: jertel/elastalert2:2.31.0
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - elastalert
+            - --verbose
+            - --config
+            - /opt/elastalert/config.yaml
+
+          env:
+            - name: ES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: elastalert2-secret
+                  key: ELASTIC_USERNAME
+
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elastalert2-secret
+                  key: ELASTIC_PASSWORD
+
+          volumeMounts:
+            - name: config
+              mountPath: /opt/elastalert/config.yaml
+              subPath: config.yaml
+              readOnly: true
+
+            - name: rules
+              mountPath: /opt/elastalert/rules/tetragon-policy-alert.yaml
+              subPath: tetragon-policy-alert.yaml
+              readOnly: true
+
+            - name: smtp-auth
+              mountPath: /opt/elastalert/smtp-auth.yaml
+              subPath: smtp-auth.yaml
+              readOnly: true
+
+      volumes:
+        - name: config
+          configMap:
+            name: elastalert2-config
+
+        - name: rules
+          configMap:
+            name: elastalert2-tetragon-rule
+
+        - name: smtp-auth
+          secret:
+            secretName: elastalert2-smtp-auth

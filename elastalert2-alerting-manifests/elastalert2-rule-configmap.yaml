@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elastalert2-tetragon-rule
+  namespace: elastic
+data:
+  tetragon-policy-alert.yaml: |
+    name: Tetragon TracingPolicy Alert
+
+    type: any
+
+    index: logs-cilium_tetragon.log-*
+
+    timestamp_field: "@timestamp"
+
+    filter:
+      - query_string:
+          query: 'message:*policy_name*'
+
+    alert:
+      - email
+
+    email:
+      - "muhammadashir2004@gmail.com"
+
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+    smtp_ssl: false
+    smtp_auth_file: /opt/elastalert/smtp-auth.yaml
+
+    from_addr: "muhammadashir2004@gmail.com"
+
+    alert_subject: "[Tetragon ALERT] TracingPolicy triggered"
+
+    alert_text_type: alert_text_jinja
+
+    alert_text: |
+      TETRAGON TRACINGPOLICY ALERT
+      ============================
+
+      Kubernetes Namespace:
+      {{ _data.get("orchestrator", {}).get("namespace", "Unknown") }}
+
+      Resource:
+      {{ _data.get("orchestrator", {}).get("resource", {}).get("name", "Unknown") }}
+
+      Container:
+      {{ _data.get("container", {}).get("name", "Unknown") }}
+
+      Container Image:
+      {{ _data.get("container", {}).get("image", {}).get("name", "Unknown") }}
+
+      Executable:
+      {{ _data.get("process", {}).get("executable", "Unknown") }}
+
+      PID:
+      {{ _data.get("process", {}).get("pid", "Unknown") }}
+
+      Node:
+      {{ _data.get("cilium_tetragon", {}).get("log", {}).get("node_name", "Unknown") }}
+
+      Tetragon Event Time:
+      {{ _data.get("cilium_tetragon", {}).get("log", {}).get("time", "Unknown") }}
+
+      Elasticsearch Timestamp:
+      {{ _data.get("@timestamp", "Unknown") }}
+
+      --------------------------------------------------
+      Event Details
+      --------------------------------------------------
+
+      {% if _data.get("cilium_tetragon", {}).get("log", {}).get("process_kprobe") %}
+      Event Type: PROCESS_KPROBE
+
+      Policy:
+      {{ _data["cilium_tetragon"]["log"]["process_kprobe"].get("policy_name", "Unknown") }}
+
+      Function:
+      {{ _data["cilium_tetragon"]["log"]["process_kprobe"].get("function_name", "Unknown") }}
+
+      Action:
+      {{ _data["cilium_tetragon"]["log"]["process_kprobe"].get("action", "Unknown") }}
+
+      Return Action:
+      {{ _data["cilium_tetragon"]["log"]["process_kprobe"].get("return_action", "Unknown") }}
+
+      Arguments:
+      {{ _data["cilium_tetragon"]["log"]["process_kprobe"].get("args", "Unknown") }}
+
+      {% elif _data.get("cilium_tetragon", {}).get("log", {}).get("process_uprobe") %}
+      Event Type: PROCESS_UPROBE
+
+      Policy:
+      {{ _data["cilium_tetragon"]["log"]["process_uprobe"].get("policy_name", "Unknown") }}
+
+      Path:
+      {{ _data["cilium_tetragon"]["log"]["process_uprobe"].get("path", "Unknown") }}
+
+      Symbol:
+      {{ _data["cilium_tetragon"]["log"]["process_uprobe"].get("symbol", "Unknown") }}
+
+      Action:
+      {{ _data["cilium_tetragon"]["log"]["process_uprobe"].get("action", "Unknown") }}
+
+      Arguments:
+      {{ _data["cilium_tetragon"]["log"]["process_uprobe"].get("args", "Unknown") }}
+
+      Data:
+      {{ _data["cilium_tetragon"]["log"]["process_uprobe"].get("data", "Unknown") }}
+
+      {% elif _data.get("cilium_tetragon", {}).get("log", {}).get("process_tracepoint") %}
+      Event Type: PROCESS_TRACEPOINT
+
+      Policy:
+      {{ _data["cilium_tetragon"]["log"]["process_tracepoint"].get("policy_name", "Unknown") }}
+
+      Subsystem:
+      {{ _data["cilium_tetragon"]["log"]["process_tracepoint"].get("subsys", "Unknown") }}
+
+      Event:
+      {{ _data["cilium_tetragon"]["log"]["process_tracepoint"].get("event", "Unknown") }}
+
+      Action:
+      {{ _data["cilium_tetragon"]["log"]["process_tracepoint"].get("action", "Unknown") }}
+
+      Arguments:
+      {{ _data["cilium_tetragon"]["log"]["process_tracepoint"].get("args", "Unknown") }}
+
+      {% elif _data.get("cilium_tetragon", {}).get("log", {}).get("process_lsm") %}
+      Event Type: PROCESS_LSM
+
+      Policy:
+      {{ _data["cilium_tetragon"]["log"]["process_lsm"].get("policy_name", "Unknown") }}
+
+      Function:
+      {{ _data["cilium_tetragon"]["log"]["process_lsm"].get("function_name", "Unknown") }}
+
+      Action:
+      {{ _data["cilium_tetragon"]["log"]["process_lsm"].get("action", "Unknown") }}
+
+      Arguments:
+      {{ _data["cilium_tetragon"]["log"]["process_lsm"].get("args", "Unknown") }}
+
+      {% elif _data.get("cilium_tetragon", {}).get("log", {}).get("process_usdt") %}
+      Event Type: PROCESS_USDT
+
+      Policy:
+      {{ _data["cilium_tetragon"]["log"]["process_usdt"].get("policy_name", "Unknown") }}
+
+      Path:
+      {{ _data["cilium_tetragon"]["log"]["process_usdt"].get("path", "Unknown") }}
+
+      Provider:
+      {{ _data["cilium_tetragon"]["log"]["process_usdt"].get("provider", "Unknown") }}
+
+      Name:
+      {{ _data["cilium_tetragon"]["log"]["process_usdt"].get("name", "Unknown") }}
+
+      Action:
+      {{ _data["cilium_tetragon"]["log"]["process_usdt"].get("action", "Unknown") }}
+
+      Arguments:
+      {{ _data["cilium_tetragon"]["log"]["process_usdt"].get("args", "Unknown") }}
+
+      {% else %}
+      Event Type: UNKNOWN (see the full event below)
+      {% endif %}
+
+      --------------------------------------------------
+      Full Tetragon Event
+      --------------------------------------------------
+
+      {{ _data.get("message", "No raw Tetragon event available") }}
+
+
+    realert:
+      seconds: 0
