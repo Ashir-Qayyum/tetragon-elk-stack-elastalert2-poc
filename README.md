@@ -1,4 +1,4 @@
-This project is to practice Implementing Email Alert on Tetragon Events using ElastAlert2 for hands on poc<br>
+This project is to practice Implementing Email Alerts on Tetragon Events using ElastAlert2 for hands on poc<br>
 
 This project is an extension of the earlier project on integration of Tetragon with ELK Stack<br>
 for visualizing Tetragon Events, and collect Event Logs:<br>
@@ -12,3 +12,6 @@ Tetragon Integration in Kibana:<br>
 
 Tetragon Events in Kibana (Updated):<br>
 ![Screenshots/image-22 (updated Kibana Visualization).png](<Screenshots/image-22 (updated Kibana Visualization).png>)<br>
+
+Kibana Dashboard for Tetragon Events:<br>
+![Screenshots/image-27 (Kibana Dashboard).png](<Screenshots/image-27 (Kibana Dashboard).png>)
