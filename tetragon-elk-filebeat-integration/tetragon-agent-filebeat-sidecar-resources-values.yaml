@@ -1,0 +1,19 @@
+tetragon:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+export:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# helm upgrade tetragon cilium/tetragon -n kube-system --version 1.7.1 --reuse-values -f tetragon-agent-filebeat-sidecar-resources-values.yaml
