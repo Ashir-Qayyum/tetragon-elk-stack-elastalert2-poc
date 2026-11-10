@@ -1,0 +1,43 @@
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: elastalert2-init
+  namespace: elastic
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: init-index
+          image: jertel/elastalert2:2.31.0
+          command:
+            - elastalert-create-index
+          args:
+            - --config
+            - /opt/elastalert/config.yaml
+            - --host
+            - elasticsearch.elastic.svc.cluster.local
+            - --port
+            - "9200"
+            - --username
+            - elastic
+            - --password
+            - $(ES_PASSWORD)
+            - --no-ssl
+          env:
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elastalert2-secret
+                  key: ELASTIC_PASSWORD
+          volumeMounts:
+            - name: config
+              mountPath: /opt/elastalert/config.yaml
+              subPath: config.yaml
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: elastalert2-config
